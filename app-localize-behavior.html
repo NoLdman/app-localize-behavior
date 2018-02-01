@@ -219,12 +219,20 @@ Polymer.AppLocalizeBehavior = {
 
     return function() {
       var key = arguments[0];
-      if (!key || !resources || !language || !resources[language])
+      // check if the language is a variant and also include the superset (e.g. en-US => en)
+      var similarLanguage = language.split("-")[0];
+      var translatedValue;
+
+      if (!key || !resources || !language || !(resources[language] || resources[similarLanguage]))
         return;
 
       // Cache the key/value pairs for the same language, so that we don't
       // do extra work if we're just reusing strings across an application.
-      var translatedValue = resources[language][key];
+      if(resources[language])
+        translatedValue = resources[language][key];
+
+      if(!translatedValue && resources[similarLanguage])
+        translatedValue = resources[similarLanguage][key];
 
       if (!translatedValue) {
         return this.useKeyIfMissing ? key : '';
